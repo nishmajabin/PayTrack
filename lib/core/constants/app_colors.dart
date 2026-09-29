@@ -19,4 +19,5 @@ class AppColors {
   static const Color pendingBackground = Color(0xFFFEF3C7);
   static const Color pendingText = Color(0xFFD97706);
   static const Color chipBackground = Color(0xFFF1F5F9);
+  static const Color border = Color(0xFFE2E8F0);
 }

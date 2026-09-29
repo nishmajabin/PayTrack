@@ -1,6 +1,5 @@
-
-import 'package:pay_track/data/models/payment_method.dart';
-import 'package:pay_track/data/models/payment_status.dart';
+import 'payment_method.dart';
+import 'payment_status.dart';
 
 class PaymentListItem {
   const PaymentListItem({
@@ -11,6 +10,8 @@ class PaymentListItem {
     required this.status,
     required this.isVisitor,
     this.avatarUrl,
+    this.localAvatarPath,
+    this.displayId,
   });
 
   final String id;
@@ -20,6 +21,8 @@ class PaymentListItem {
   final PaymentStatus status;
   final bool isVisitor;
   final String? avatarUrl;
+  final String? localAvatarPath;
+  final String? displayId;
 
   bool get isPaid => status == PaymentStatus.paid;
 }

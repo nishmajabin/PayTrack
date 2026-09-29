@@ -13,7 +13,7 @@ class PaymentSearchField extends StatelessWidget {
     return TextField(
       onChanged: viewModel.updateSearchQuery,
       decoration: InputDecoration(
-        hintText: 'Search users...',
+        hintText: 'search...',
         prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
         filled: true,
         fillColor: Colors.white,

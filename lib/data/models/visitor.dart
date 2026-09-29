@@ -8,6 +8,7 @@ class Visitor {
     required this.amount,
     this.method,
     this.status = PaymentStatus.pending,
+    this.photoPath,
   });
 
   final String id;
@@ -15,6 +16,7 @@ class Visitor {
   final double amount;
   final PaymentMethod? method;
   final PaymentStatus status;
+  final String? photoPath;
 
   Visitor copyWith({double? amount, PaymentMethod? method, PaymentStatus? status}) {
     return Visitor(
@@ -23,6 +25,7 @@ class Visitor {
       amount: amount ?? this.amount,
       method: method ?? this.method,
       status: status ?? this.status,
+      photoPath: photoPath,
     );
   }
 }

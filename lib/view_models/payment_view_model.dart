@@ -64,11 +64,16 @@ abstract class _PaymentViewModelBase with Store {
   }
 
   @action
-  void updateUserPayment(String userId, {required double amount, required PaymentMethod method}) {
+  void updateUserPayment(
+    String userId, {
+    required double amount,
+    required PaymentMethod method,
+    required PaymentStatus status,
+  }) {
     _userPayments[userId] = PaymentDetails(
       amount: amount,
       method: method,
-      status: PaymentStatus.paid,
+      status: status,
     );
   }
 
@@ -77,23 +82,37 @@ abstract class _PaymentViewModelBase with Store {
   ObservableList<Visitor> visitors = ObservableList<Visitor>();
 
   @action
-  void addVisitor(String name) {
-    visitors.add(Visitor(
-      id: 'visitor_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      amount: PaymentConstants.defaultVisitorAmount,
-    ));
+  void addVisitor(
+    String name, {
+    required double amount,
+    required PaymentMethod method,
+    String? photoPath,
+  }) {
+    visitors.add(
+      Visitor(
+        id: 'visitor_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        amount: amount,
+        method: method,
+        photoPath: photoPath,
+      ),
+    );
   }
 
   @action
-  void updateVisitorPayment(String visitorId, {required double amount, required PaymentMethod method}) {
+  void updateVisitorPayment(
+    String visitorId, {
+    required double amount,
+    required PaymentMethod method,
+    required PaymentStatus status,
+  }) {
     final index = visitors.indexWhere((visitor) => visitor.id == visitorId);
     if (index == -1) return;
 
     visitors[index] = visitors[index].copyWith(
       amount: amount,
       method: method,
-      status: PaymentStatus.paid,
+      status: status,
     );
   }
 
@@ -113,11 +132,11 @@ abstract class _PaymentViewModelBase with Store {
   // Combined list + summary
   @computed
   List<PaymentListItem> get _allItems => [
-        ...apiUsers.map(_userToItem),
-        ...visitors.map(_visitorToItem),
-      ];
+    for (var i = 0; i < apiUsers.length; i++) _userToItem(apiUsers[i], i),
+    ...visitors.map(_visitorToItem),
+  ];
 
-  PaymentListItem _userToItem(User user) {
+  PaymentListItem _userToItem(User user, int index) {
     final details = paymentDetailsFor(user.id);
     return PaymentListItem(
       id: user.id,
@@ -127,6 +146,7 @@ abstract class _PaymentViewModelBase with Store {
       status: details.status,
       isVisitor: false,
       avatarUrl: user.picture.medium,
+      displayId: 'USR-${(index + 1).toString().padLeft(4, '0')}',
     );
   }
 
@@ -138,6 +158,7 @@ abstract class _PaymentViewModelBase with Store {
       method: visitor.method,
       status: visitor.status,
       isVisitor: true,
+      localAvatarPath: visitor.photoPath,
     );
   }
 

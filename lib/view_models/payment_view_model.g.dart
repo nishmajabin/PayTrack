@@ -165,22 +165,29 @@ mixin _$PaymentViewModel on _PaymentViewModelBase, Store {
 
   @override
   void updateUserPayment(String userId,
-      {required double amount, required PaymentMethod method}) {
+      {required double amount,
+      required PaymentMethod method,
+      required PaymentStatus status}) {
     final _$actionInfo = _$_PaymentViewModelBaseActionController.startAction(
         name: '_PaymentViewModelBase.updateUserPayment');
     try {
-      return super.updateUserPayment(userId, amount: amount, method: method);
+      return super.updateUserPayment(userId,
+          amount: amount, method: method, status: status);
     } finally {
       _$_PaymentViewModelBaseActionController.endAction(_$actionInfo);
     }
   }
 
   @override
-  void addVisitor(String name) {
+  void addVisitor(String name,
+      {required double amount,
+      required PaymentMethod method,
+      String? photoPath}) {
     final _$actionInfo = _$_PaymentViewModelBaseActionController.startAction(
         name: '_PaymentViewModelBase.addVisitor');
     try {
-      return super.addVisitor(name);
+      return super.addVisitor(name,
+          amount: amount, method: method, photoPath: photoPath);
     } finally {
       _$_PaymentViewModelBaseActionController.endAction(_$actionInfo);
     }
@@ -188,12 +195,14 @@ mixin _$PaymentViewModel on _PaymentViewModelBase, Store {
 
   @override
   void updateVisitorPayment(String visitorId,
-      {required double amount, required PaymentMethod method}) {
+      {required double amount,
+      required PaymentMethod method,
+      required PaymentStatus status}) {
     final _$actionInfo = _$_PaymentViewModelBaseActionController.startAction(
         name: '_PaymentViewModelBase.updateVisitorPayment');
     try {
-      return super
-          .updateVisitorPayment(visitorId, amount: amount, method: method);
+      return super.updateVisitorPayment(visitorId,
+          amount: amount, method: method, status: status);
     } finally {
       _$_PaymentViewModelBaseActionController.endAction(_$actionInfo);
     }

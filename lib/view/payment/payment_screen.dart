@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:pay_track/view/payment/update_payment_screen.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../view_models/payment_view_model.dart';
 import 'widgets/add_visitor_dialog.dart';
-import 'widgets/edit_payment_sheet.dart';
 import 'widgets/payment_card.dart';
 import 'widgets/payment_search_field.dart';
 import 'widgets/payment_summary_bar.dart';
@@ -33,9 +33,15 @@ class PaymentScreen extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(viewModel.fetchErrorMessage, textAlign: TextAlign.center),
+                    Text(
+                      viewModel.fetchErrorMessage,
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 16),
-                    FilledButton(onPressed: viewModel.loadUsers, child: const Text('Retry')),
+                    FilledButton(
+                      onPressed: viewModel.loadUsers,
+                      child: const Text('Retry'),
+                    ),
                   ],
                 ),
               ),
@@ -68,10 +74,13 @@ class PaymentScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(bottom: 12),
                             child: PaymentCard(
                               item: item,
-                              onTap: () => showEditPaymentSheet(
-                                context: context,
-                                viewModel: viewModel,
-                                item: item,
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => UpdatePaymentScreen(
+                                    viewModel: viewModel,
+                                    item: item,
+                                  ),
+                                ),
                               ),
                             ),
                           );
