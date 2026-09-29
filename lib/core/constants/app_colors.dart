@@ -13,4 +13,10 @@ class AppColors {
   static const Color textSecondary = Color(0xFF64748B);
   static const Color textMuted = Color(0xFF94A3B8);
   static const Color logoShadow = Color(0x334F46E5);
+
+  static const Color paidBackground = Color(0xFFD1FAE5);
+  static const Color paidText = Color(0xFF059669);
+  static const Color pendingBackground = Color(0xFFFEF3C7);
+  static const Color pendingText = Color(0xFFD97706);
+  static const Color chipBackground = Color(0xFFF1F5F9);
 }

@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'core/constants/app_colors.dart';
 import 'core/routes/app_router.dart';
 import 'core/routes/app_routes.dart';
-import 'view_models/user_list_view_model.dart';
+import 'view_models/payment_view_model.dart';
 
 class PayTrackApp extends StatelessWidget {
-  const PayTrackApp({super.key, required this.userListViewModel});
+  const PayTrackApp({super.key, required this.paymentViewModel});
 
-  final UserListViewModel userListViewModel;
+  final PaymentViewModel paymentViewModel;
 
   @override
   Widget build(BuildContext context) {
-    final appRouter = AppRouter(userListViewModel);
+    final appRouter = AppRouter(paymentViewModel);
 
     return MaterialApp(
       title: 'PayTrack',
