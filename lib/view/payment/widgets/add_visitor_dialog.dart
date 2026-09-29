@@ -1,13 +1,11 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/payment_constants.dart';
-import '../../../view_models/add_visitor_form_view_model.dart';
-import '../../../view_models/payment_view_model.dart';
+import 'package:pay_track/core/constants/app_colors.dart';
+import 'package:pay_track/core/constants/payment_constants.dart';
+import 'package:pay_track/view_models/add_visitor_form_view_model.dart';
+import 'package:pay_track/view_models/payment_view_model.dart';
 import 'payment_method_selector.dart';
 
 Future<void> showAddVisitorDialog(BuildContext context, PaymentViewModel viewModel) {

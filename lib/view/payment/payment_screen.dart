@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:pay_track/view/payment/update_payment_screen.dart';
+import 'package:pay_track/view/update_payment/update_payment_screen.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../view_models/payment_view_model.dart';

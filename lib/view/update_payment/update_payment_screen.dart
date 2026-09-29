@@ -1,15 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:pay_track/core/constants/app_colors.dart';
+import 'package:pay_track/data/models/payment_list_item.dart';
+import 'package:pay_track/data/models/payment_method.dart';
+import 'package:pay_track/data/models/payment_status.dart';
 import 'package:pay_track/view/payment/widgets/payment_method_selector.dart';
-
-import '../../../core/constants/app_colors.dart';
-import '../../../data/models/payment_list_item.dart';
-import '../../../data/models/payment_method.dart';
-import '../../../data/models/payment_status.dart';
-import '../../../view_models/payment_view_model.dart';
-import '../../../view_models/update_payment_form_view_model.dart';
+import 'package:pay_track/view/update_payment/widgets/avatar_preview.dart';
+import 'package:pay_track/view_models/payment_view_model.dart';
+import 'package:pay_track/view_models/update_payment_form_view_model.dart';
 
 class UpdatePaymentScreen extends StatelessWidget {
   UpdatePaymentScreen({super.key, required this.viewModel, required this.item})
@@ -71,7 +69,7 @@ class UpdatePaymentScreen extends StatelessWidget {
             child: Column(
               children: [
                 Observer(
-                  builder: (_) => _AvatarPreview(item: item, isPaid: _formViewModel.markAsPaid),
+                  builder: (_) => AvatarPreview(item: item, isPaid: _formViewModel.markAsPaid),
                 ),
                 const SizedBox(height: 12),
                 Text(item.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
@@ -205,59 +203,5 @@ class UpdatePaymentScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _AvatarPreview extends StatelessWidget {
-  const _AvatarPreview({required this.item, required this.isPaid});
-
-  final PaymentListItem item;
-  final bool isPaid;
-
-  @override
-  Widget build(BuildContext context) {
-    ImageProvider? provider;
-    if (item.avatarUrl != null) {
-      provider = NetworkImage(item.avatarUrl!);
-    } else if (item.localAvatarPath != null) {
-      provider = FileImage(File(item.localAvatarPath!));
-    }
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: isPaid ? AppColors.secondary : Colors.transparent, width: 3),
-          ),
-          child: CircleAvatar(
-            radius: 40,
-            backgroundColor: AppColors.primaryLight,
-            backgroundImage: provider,
-            child: provider == null
-                ? Text(_initials(item.name),
-                    style: const TextStyle(fontSize: 22, color: AppColors.primary, fontWeight: FontWeight.w600))
-                : null,
-          ),
-        ),
-        if (isPaid)
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
-              child: const Icon(Icons.check, size: 14, color: Colors.white),
-            ),
-          ),
-      ],
-    );
-  }
-
-  String _initials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    return parts.take(2).map((p) => p.isEmpty ? '' : p[0]).join().toUpperCase();
   }
 }
