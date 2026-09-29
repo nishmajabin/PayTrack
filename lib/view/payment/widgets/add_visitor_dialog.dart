@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/payment_constants.dart';
-import '../../../data/models/payment_method.dart';
+import '../../../view_models/add_visitor_form_view_model.dart';
 import '../../../view_models/payment_view_model.dart';
 import 'payment_method_selector.dart';
 
@@ -16,47 +17,32 @@ Future<void> showAddVisitorDialog(BuildContext context, PaymentViewModel viewMod
   );
 }
 
-class _AddVisitorDialog extends StatefulWidget {
-  const _AddVisitorDialog({required this.viewModel});
+class _AddVisitorDialog extends StatelessWidget {
+  _AddVisitorDialog({required this.viewModel});
 
   final PaymentViewModel viewModel;
-
-  @override
-  State<_AddVisitorDialog> createState() => _AddVisitorDialogState();
-}
-
-class _AddVisitorDialogState extends State<_AddVisitorDialog> {
-  final _nameController = TextEditingController();
-  final _amountController =
+  final AddVisitorFormViewModel _formViewModel = AddVisitorFormViewModel();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _amountController =
       TextEditingController(text: PaymentConstants.defaultVisitorAmount.toStringAsFixed(0));
-  final _picker = ImagePicker();
-
-  PaymentMethod _selectedMethod = PaymentMethod.cash;
-  XFile? _pickedImage;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
+  final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickPhoto() async {
     final image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (image != null) setState(() => _pickedImage = image);
+    if (image != null) _formViewModel.setPhoto(image.path);
   }
 
-  void _submit() {
+  void _submit(BuildContext context) {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
     final amount = double.tryParse(_amountController.text.trim()) ?? PaymentConstants.defaultVisitorAmount;
 
-    widget.viewModel.addVisitor(
+    viewModel.addVisitor(
       name,
       amount: amount,
-      method: _selectedMethod,
-      photoPath: _pickedImage?.path,
+      method: _formViewModel.selectedMethod,
+      photoPath: _formViewModel.photoPath,
     );
 
     Navigator.of(context).pop();
@@ -91,30 +77,35 @@ class _AddVisitorDialogState extends State<_AddVisitorDialog> {
               ),
               const SizedBox(height: 16),
               Center(
-                child: GestureDetector(
-                  onTap: _pickPhoto,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundColor: AppColors.chipBackground,
-                        backgroundImage: _pickedImage != null ? FileImage(File(_pickedImage!.path)) : null,
-                        child: _pickedImage == null
-                            ? const Icon(Icons.person_outline, color: AppColors.textMuted, size: 28)
-                            : null,
+                child: Observer(
+                  builder: (_) {
+                    final photoPath = _formViewModel.photoPath;
+                    return GestureDetector(
+                      onTap: _pickPhoto,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          CircleAvatar(
+                            radius: 32,
+                            backgroundColor: AppColors.chipBackground,
+                            backgroundImage: photoPath != null ? FileImage(File(photoPath)) : null,
+                            child: photoPath == null
+                                ? const Icon(Icons.person_outline, color: AppColors.textMuted, size: 28)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: -2,
+                            right: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                              child: const Icon(Icons.camera_alt, size: 12, color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                      Positioned(
-                        bottom: -2,
-                        right: -2,
-                        child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                          child: const Icon(Icons.camera_alt, size: 12, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 4),
@@ -161,10 +152,12 @@ class _AddVisitorDialogState extends State<_AddVisitorDialog> {
               const SizedBox(height: 14),
               const Text('Payment Method', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
               const SizedBox(height: 6),
-              PaymentMethodSelector(
-                selected: _selectedMethod,
-                filledStyle: false,
-                onChanged: (method) => setState(() => _selectedMethod = method),
+              Observer(
+                builder: (_) => PaymentMethodSelector(
+                  selected: _formViewModel.selectedMethod,
+                  filledStyle: false,
+                  onChanged: _formViewModel.selectMethod,
+                ),
               ),
               const SizedBox(height: 14),
               Container(
@@ -194,7 +187,7 @@ class _AddVisitorDialogState extends State<_AddVisitorDialog> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: FilledButton(onPressed: _submit, child: const Text('Add Visitor')),
+                    child: FilledButton(onPressed: () => _submit(context), child: const Text('Add Visitor')),
                   ),
                 ],
               ),

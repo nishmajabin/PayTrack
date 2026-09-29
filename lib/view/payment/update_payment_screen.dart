@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:pay_track/view/payment/widgets/payment_method_selector.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -8,42 +9,46 @@ import '../../../data/models/payment_list_item.dart';
 import '../../../data/models/payment_method.dart';
 import '../../../data/models/payment_status.dart';
 import '../../../view_models/payment_view_model.dart';
+import '../../../view_models/update_payment_form_view_model.dart';
 
-class UpdatePaymentScreen extends StatefulWidget {
-  const UpdatePaymentScreen({super.key, required this.viewModel, required this.item});
+class UpdatePaymentScreen extends StatelessWidget {
+  UpdatePaymentScreen({super.key, required this.viewModel, required this.item})
+      : _formViewModel = UpdatePaymentFormViewModel(
+          initialMethod: item.method ?? PaymentMethod.cash,
+          initialMarkAsPaid: item.isPaid,
+        ),
+        _amountController = TextEditingController(text: item.amount.toStringAsFixed(0));
 
   final PaymentViewModel viewModel;
   final PaymentListItem item;
+  final UpdatePaymentFormViewModel _formViewModel;
+  final TextEditingController _amountController;
 
-  @override
-  State<UpdatePaymentScreen> createState() => _UpdatePaymentScreenState();
-}
+  double get _defaultAmount => item.isVisitor ? 1000 : 2500;
 
-class _UpdatePaymentScreenState extends State<UpdatePaymentScreen> {
-  late final TextEditingController _amountController;
-  late PaymentMethod _selectedMethod;
-  late bool _markAsPaid;
+  void _handleUpdate(BuildContext context) {
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid amount.')),
+      );
+      return;
+    }
 
-  @override
-  void initState() {
-    super.initState();
-    _amountController = TextEditingController(text: widget.item.amount.toStringAsFixed(0));
-    _selectedMethod = widget.item.method ?? PaymentMethod.cash;
-    _markAsPaid = widget.item.isPaid;
+    final status = _formViewModel.markAsPaid ? PaymentStatus.paid : PaymentStatus.pending;
+    final method = _formViewModel.selectedMethod;
+
+    if (item.isVisitor) {
+      viewModel.updateVisitorPayment(item.id, amount: amount, method: method, status: status);
+    } else {
+      viewModel.updateUserPayment(item.id, amount: amount, method: method, status: status);
+    }
+
+    Navigator.of(context).pop();
   }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  double get _defaultAmount => widget.item.isVisitor ? 1000 : 2500;
 
   @override
   Widget build(BuildContext context) {
-    final item = widget.item;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -65,7 +70,9 @@ class _UpdatePaymentScreenState extends State<UpdatePaymentScreen> {
           Center(
             child: Column(
               children: [
-                _AvatarPreview(item: item, isPaid: _markAsPaid),
+                Observer(
+                  builder: (_) => _AvatarPreview(item: item, isPaid: _formViewModel.markAsPaid),
+                ),
                 const SizedBox(height: 12),
                 Text(item.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 if (item.displayId != null) ...[
@@ -137,39 +144,46 @@ class _UpdatePaymentScreenState extends State<UpdatePaymentScreen> {
                 const Text('PAYMENT METHOD',
                     style: TextStyle(fontSize: 11, letterSpacing: 0.5, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                PaymentMethodSelector(
-                  selected: _selectedMethod,
-                  onChanged: (method) => setState(() => _selectedMethod = method),
+                Observer(
+                  builder: (_) => PaymentMethodSelector(
+                    selected: _formViewModel.selectedMethod,
+                    onChanged: _formViewModel.selectMethod,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Divider(height: 1),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: AppColors.paidBackground, shape: BoxShape.circle),
-                      child: const Icon(Icons.check, size: 14, color: AppColors.secondary),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Mark as Paid', style: TextStyle(fontWeight: FontWeight.w600)),
-                          Text(
-                            _markAsPaid ? 'Settlement completed' : 'Payment pending',
-                            style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                Observer(
+                  builder: (_) {
+                    final markAsPaid = _formViewModel.markAsPaid;
+                    return Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(color: AppColors.paidBackground, shape: BoxShape.circle),
+                          child: const Icon(Icons.check, size: 14, color: AppColors.secondary),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Mark as Paid', style: TextStyle(fontWeight: FontWeight.w600)),
+                              Text(
+                                markAsPaid ? 'Settlement completed' : 'Payment pending',
+                                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: _markAsPaid,
-                      activeColor: AppColors.secondary,
-                      onChanged: (value) => setState(() => _markAsPaid = value),
-                    ),
-                  ],
+                        ),
+                        Switch(
+                          value: markAsPaid,
+                          activeThumbColor: AppColors.secondary,
+                          onChanged: _formViewModel.setMarkAsPaid,
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -181,7 +195,7 @@ class _UpdatePaymentScreenState extends State<UpdatePaymentScreen> {
             child: FilledButton.icon(
               icon: const Icon(Icons.check, size: 18),
               label: const Text('Update Payment'),
-              onPressed: _handleUpdate,
+              onPressed: () => _handleUpdate(context),
             ),
           ),
           const SizedBox(height: 10),
@@ -191,26 +205,6 @@ class _UpdatePaymentScreenState extends State<UpdatePaymentScreen> {
         ],
       ),
     );
-  }
-
-  void _handleUpdate() {
-    final amount = double.tryParse(_amountController.text);
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid amount.')),
-      );
-      return;
-    }
-
-    final status = _markAsPaid ? PaymentStatus.paid : PaymentStatus.pending;
-
-    if (widget.item.isVisitor) {
-      widget.viewModel.updateVisitorPayment(widget.item.id, amount: amount, method: _selectedMethod, status: status);
-    } else {
-      widget.viewModel.updateUserPayment(widget.item.id, amount: amount, method: _selectedMethod, status: status);
-    }
-
-    Navigator.of(context).pop();
   }
 }
 
