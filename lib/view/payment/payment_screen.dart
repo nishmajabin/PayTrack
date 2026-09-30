@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:pay_track/core/constants/app_colors.dart';
+import 'package:pay_track/view/payment/widgets/clear_data_dialog.dart';
 import 'package:pay_track/view/update_payment/update_payment_screen.dart';
-
-import '../../core/constants/app_colors.dart';
-import '../../view_models/payment_view_model.dart';
+import 'package:pay_track/view_models/payment_view_model.dart';
 import 'widgets/add_visitor_dialog.dart';
 import 'widgets/payment_card.dart';
 import 'widgets/payment_search_field.dart';
@@ -19,7 +19,41 @@ class PaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Payments')),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          'Payments',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          PopupMenuButton<void>(
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (context) => [
+              PopupMenuItem<void>(
+                onTap: () => Future.delayed(
+                  Duration.zero,
+                  // ignore: use_build_context_synchronously
+                  () => showClearDataDialog(context, viewModel),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: AppColors.danger,
+                    ),
+                    SizedBox(width: 8),
+                    Text('Clear Data'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: Observer(
         builder: (_) {
           if (viewModel.fetchStatus == UsersFetchStatus.loading) {

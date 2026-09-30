@@ -77,6 +77,12 @@ abstract class _PaymentViewModelBase with Store {
     );
   }
 
+  @action
+  void clearAllData() {
+    _userPayments.clear();
+    visitors.clear();
+  }
+
   // Visitors
   @observable
   ObservableList<Visitor> visitors = ObservableList<Visitor>();
